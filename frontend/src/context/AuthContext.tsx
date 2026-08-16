@@ -19,6 +19,15 @@ interface AuthContextType {
   refreshUser: () => Promise<void>
 }
 
+function toUser(data: { _id: string; name: string; phone: string; role: string }): User {
+  return {
+    _id: data._id,
+    name: data.name,
+    phone: data.phone,
+    role: data.role as 'customer' | 'admin',
+  }
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -29,7 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const refreshUser = useCallback(async () => {
     try {
       const res = await authAPI.getMe()
-      setUser(res.data)
+      setUser(toUser(res.data))
     } catch {
       setUser(null)
     } finally {
@@ -43,8 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (storedUser) {
         try {
           const parsed = JSON.parse(storedUser)
-          setUser(parsed)
-          // Verify token is still valid
+          setUser(toUser(parsed))
           await refreshUser()
         } catch {
           localStorage.removeItem('user')
@@ -61,14 +69,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (phone: string, password: string) => {
     const res = await authAPI.login({ phone, password })
-    const userData = res.data
+    const userData = toUser(res.data)
     localStorage.setItem('user', JSON.stringify(userData))
     setUser(userData)
   }
 
   const register = async (name: string, phone: string, password: string) => {
     const res = await authAPI.register({ name, phone, password })
-    const userData = res.data
+    const userData = toUser(res.data)
     localStorage.setItem('user', JSON.stringify(userData))
     setUser(userData)
   }
@@ -81,7 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const updateProfile = async (data: { name?: string; phone?: string; password?: string }) => {
     const res = await authAPI.updateProfile(data)
-    const userData = res.data
+    const userData = toUser(res.data)
     localStorage.setItem('user', JSON.stringify(userData))
     setUser(userData)
   }

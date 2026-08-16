@@ -1,99 +1,87 @@
-import axios from 'axios'
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
-  withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json'
-  }
-})
-
-let isRefreshing = false
-let failedQueue: Array<{ resolve: (value: any) => void; reject: (reason: any) => void }> = []
-
-const processQueue = (error: any, token: string | null = null) => {
-  failedQueue.forEach(prom => {
-    if (error) {
-      prom.reject(error)
-    } else {
-      prom.resolve(token)
-    }
-  })
-  failedQueue = []
+interface ApiResponse<T> {
+  data: T
+  message?: string
 }
 
-api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config
+async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  const url = `${API_BASE}${endpoint}`
+  const res = await fetch(url, {
+    ...options,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  })
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject })
-        }).then(() => api(originalRequest))
-      }
+  const contentType = res.headers.get('content-type')
+  const data = contentType?.includes('application/json') ? await res.json().catch(() => ({})) : {}
 
-      originalRequest._retry = true
-      isRefreshing = true
-
-      try {
-        // Try to refresh the token via the refresh endpoint
-        // For now, just clear user and let ProtectedRoute handle redirect
-        localStorage.removeItem('user')
-        
-        // Don't do window.location.href - let React Router handle it
-        // The AuthProvider will set user to null on next check
-        isRefreshing = false
-        processQueue(error)
-        return Promise.reject(error)
-      } catch (err) {
-        isRefreshing = false
-        processQueue(err)
-        return Promise.reject(err)
-      }
-    }
-
-    return Promise.reject(error)
+  if (!res.ok) {
+    throw new ResponseError(res.status, data.message || 'Request failed')
   }
-)
+
+  if (res.status === 204) return undefined as T
+  return data as T
+}
+
+class ResponseError extends Error {
+  constructor(public status: number, message: string) {
+    super(message)
+    this.name = 'ResponseError'
+  }
+}
+
+function isResponseError(err: unknown): err is ResponseError {
+  return err instanceof ResponseError
+}
 
 export const authAPI = {
   register: (data: { name: string; phone: string; password: string }) =>
-    api.post('/auth/register', data),
+    request<ApiResponse<{ _id: string; name: string; phone: string; role: string; token: string }>>('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
   login: (data: { phone: string; password: string }) =>
-    api.post('/auth/login', data),
-  logout: () => api.post('/auth/logout'),
-  getMe: () => api.get('/auth/me'),
+    request<ApiResponse<{ _id: string; name: string; phone: string; role: string; token: string }>>('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
+  logout: () => request('/auth/logout', { method: 'POST' }),
+  getMe: () => request<ApiResponse<{ _id: string; name: string; phone: string; role: string }>>('/auth/me'),
   updateProfile: (data: { name?: string; phone?: string; password?: string }) =>
-    api.put('/auth/profile', data)
+    request<ApiResponse<{ _id: string; name: string; phone: string; role: string }>>('/auth/profile', { method: 'PUT', body: JSON.stringify(data) }),
 }
 
 export const productAPI = {
-  getAll: (params?: { category?: string; search?: string; page?: number; limit?: number }) =>
-    api.get('/products', { params }),
-  getById: (id: string) => api.get(`/products/${id}`),
-  getCategories: () => api.get('/products/categories'),
-  create: (data: FormData) => api.post('/products', data, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  }),
-  update: (id: string, data: FormData) => api.put(`/products/${id}`, data, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  }),
-  delete: (id: string) => api.delete(`/products/${id}`),
-  getLowStock: () => api.get('/products/low-stock')
+  getAll: (params?: { category?: string; search?: string; page?: number; limit?: number }) => {
+    const searchParams = new URLSearchParams()
+    if (params?.category && params.category !== 'all') searchParams.set('category', params.category)
+    if (params?.search) searchParams.set('search', params.search)
+    if (params?.page) searchParams.set('page', params.page.toString())
+    if (params?.limit) searchParams.set('limit', params.limit.toString())
+    return request<ApiResponse<{ products: any[]; totalPages: number; currentPage: number; total: number }>>(`/products?${searchParams.toString()}`)
+  },
+  getById: (id: string) => request<ApiResponse<any>>(`/products/${id}`),
+  getCategories: () => request<ApiResponse<string[]>>('/products/categories'),
+  create: (data: FormData) => request<ApiResponse<any>>('/products', { method: 'POST', body: data, headers: {} }),
+  update: (id: string, data: FormData) => request<ApiResponse<any>>(`/products/${id}`, { method: 'PUT', body: data, headers: {} }),
+  delete: (id: string) => request<ApiResponse<any>>(`/products/${id}`, { method: 'DELETE' }),
+  getLowStock: () => request<ApiResponse<any[]>>('/products/low-stock'),
 }
 
 export const orderAPI = {
   create: (items: { productId: string; qty: number }[]) =>
-    api.post('/orders', { items }),
-  getMyOrders: () => api.get('/orders/my-orders'),
-  getById: (id: string) => api.get(`/orders/${id}`),
-  getAll: (params?: { status?: string; page?: number; limit?: number }) =>
-    api.get('/orders', { params }),
+    request<ApiResponse<any>>('/orders', { method: 'POST', body: JSON.stringify({ items }) }),
+  getMyOrders: () => request<ApiResponse<any[]>>('/orders/my-orders'),
+  getById: (id: string) => request<ApiResponse<any>>(`/orders/${id}`),
+  getAll: (params?: { status?: string; page?: number; limit?: number }) => {
+    const searchParams = new URLSearchParams()
+    if (params?.status && params.status !== 'all') searchParams.set('status', params.status)
+    if (params?.page) searchParams.set('page', params.page.toString())
+    if (params?.limit) searchParams.set('limit', params.limit.toString())
+    return request<ApiResponse<{ orders: any[]; totalPages: number; currentPage: number; total: number }>>(`/orders?${searchParams.toString()}`)
+  },
   updateStatus: (id: string, status: string) =>
-    api.put(`/orders/${id}/status`, { status }),
-  getDashboardStats: () => api.get('/orders/dashboard/stats')
+    request<ApiResponse<any>>(`/orders/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }) }),
+  getDashboardStats: () => request<ApiResponse<{ totalOrdersToday: number; pendingOrders: number; lowStockCount: number }>>('/orders/dashboard/stats'),
 }
 
-export default api
+export { isResponseError }
+export default request
