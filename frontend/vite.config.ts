@@ -38,9 +38,10 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          'vendor-react': ['react', 'react-dom'],
-          'vendor-router': ['react-router-dom'],
+          // Vendor chunks - combined works better
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
           'vendor-ui': ['lucide-react', 'clsx', 'tailwind-merge'],
+          // Pages
           'pages-home': ['./src/pages/HomePage.tsx'],
           'pages-products': ['./src/pages/ProductsPage.tsx'],
           'pages-product-detail': ['./src/pages/ProductDetailPage.tsx'],
