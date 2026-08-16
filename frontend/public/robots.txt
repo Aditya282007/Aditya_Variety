@@ -1,0 +1,15 @@
+# Robots.txt for Variety Store
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://aditya-variety.vercel.app/sitemap.xml
+
+# Disallow admin and private routes
+Disallow: /admin/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /account/
+Disallow: /login
+Disallow: /register
+Disallow: /api/
