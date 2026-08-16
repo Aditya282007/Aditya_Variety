@@ -19,7 +19,7 @@ const staticRoutes = [
 
 // Dynamic routes from built files
 function getDynamicRoutes() {
-  const routes: string[] = []
+  const routes = []
   
   // Product pages would be dynamic - add a placeholder
   // In production, you'd query your database for all product slugs
@@ -41,8 +41,8 @@ ${allRoutes.map(route => `  <url>
   </url>`).join('\n')}
 </urlset>`
 
-  writeFileSync('frontend/dist/sitemap.xml', sitemap)
-  console.log('Sitemap generated at frontend/dist/sitemap.xml')
+  writeFileSync('public/sitemap.xml', sitemap)
+  console.log('Sitemap generated at public/sitemap.xml')
 }
 
 generateSitemap()
