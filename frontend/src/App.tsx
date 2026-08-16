@@ -10,6 +10,7 @@ import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
 import { CheckoutPage } from './pages/CheckoutPage'
 import { AccountPage } from './pages/AccountPage'
+import { ContactPage } from './pages/ContactPage'
 import { AdminLoginPage } from './pages/AdminLoginPage'
 import { AdminDashboardPage } from './pages/AdminDashboardPage'
 import { AdminProductsPage } from './pages/AdminProductsPage'
@@ -60,6 +61,7 @@ export function App() {
         <Route path="register" element={<RegisterPage />} />
         <Route path="checkout" element={<CustomerRoute><CheckoutPage /></CustomerRoute>} />
         <Route path="account/*" element={<CustomerRoute><AccountPage /></CustomerRoute>} />
+        <Route path="contact" element={<ContactPage />} />
       </Route>
 
       <Route path="admin/login" element={<AdminLoginPage />} />

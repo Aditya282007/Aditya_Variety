@@ -1,8 +1,8 @@
 import 'dotenv/config';
 import mongoose from 'mongoose';
-import User from './src/models/User.js';
-import Product from './src/models/Product.js';
-import Order from './src/models/Order.js';
+import User from '../models/User.js';
+import Product from '../models/Product.js';
+import Order from '../models/Order.js';
 
 async function clearDatabase() {
   try {
