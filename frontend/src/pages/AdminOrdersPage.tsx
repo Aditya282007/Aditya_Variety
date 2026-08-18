@@ -44,11 +44,11 @@ export function AdminOrdersPage() {
         page: currentPage,
         limit: 20
       })
-      setOrders(res.data.orders || [])
+      setOrders(res.orders || [])
       setPagination({
-        totalPages: res.data.totalPages || 1,
-        currentPage: res.data.currentPage || 1,
-        total: res.data.total || 0
+        totalPages: res.totalPages || 1,
+        currentPage: res.currentPage || 1,
+        total: res.total || 0
       })
     } catch (err) {
       showToast('error', 'Failed to load orders')
@@ -154,7 +154,7 @@ export function AdminOrdersPage() {
                       : 'bg-sage-100 text-sage-700 hover:bg-sage-200 hover:text-sage-900'
                   )}
                 >
-                  {isAll ? 'All' : statusValue.charAt(0).toUpperCase() + statusValue.slice(1)}
+{isAll ? 'All' : statusValue.charAt(0).toUpperCase() + statusValue.slice(1)}
                 </button>
               )
             })}
@@ -256,4 +256,14 @@ export function AdminOrdersPage() {
       </div>
     </div>
   )
+}
+
+const getStatusBadge = (status: string) => {
+  const variants: Record<string, 'success' | 'warning' | 'danger' | 'info'> = {
+    pending: 'warning',
+    confirmed: 'info',
+    fulfilled: 'success',
+    cancelled: 'danger'
+  }
+  return <Badge variant={variants[status] || 'default'} className="capitalize">{status}</Badge>
 }

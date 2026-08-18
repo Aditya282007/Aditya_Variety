@@ -35,16 +35,16 @@ export function ProductsPage() {
         }),
         productAPI.getCategories()
       ])
-      setProducts(productsRes.data.products || [])
-      setCategories(categoriesRes.data || [])
+      setProducts(productsRes.products || [])
+      setCategories(categoriesRes || [])
       setPagination({
-        totalPages: productsRes.data.totalPages || 1,
-        currentPage: productsRes.data.currentPage || 1,
-        total: productsRes.data.total || 0
+        totalPages: productsRes.totalPages || 1,
+        currentPage: productsRes.currentPage || 1,
+        total: productsRes.total || 0
       })
 
       const counts: Record<string, number> = {}
-      productsRes.data.products?.forEach((p: any) => {
+      productsRes.products?.forEach((p: any) => {
         counts[p.category] = (counts[p.category] || 0) + 1
       })
       setCategoryCounts(counts)
@@ -60,7 +60,7 @@ export function ProductsPage() {
   }, [fetchProducts])
 
   useEffect(() => {
-    productAPI.getCategories().then(res => setCategories(res.data || []))
+    productAPI.getCategories().then(res => setCategories(res || []))
   }, [])
 
   const handleCategoryChange = (category: string) => {
@@ -102,6 +102,28 @@ export function ProductsPage() {
 
   const hasFilters = selectedCategory !== 'all' || searchQuery
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-cream-50 py-8">
+        <div className="container animate-pulse space-y-6">
+          <div className="h-8 bg-sage-100 rounded w-1/4" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div key={i} className="card animate-pulse">
+                <div className="aspect-square bg-sage-100" />
+                <div className="p-4 space-y-3">
+                  <div className="h-4 bg-sage-100 rounded w-3/4" />
+                  <div className="h-3 bg-sage-100 rounded w-1/2" />
+                  <div className="h-6 bg-sage-100 rounded w-1/4 mt-auto" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-cream-50">
       <section className="bg-white border-b border-sage-100 py-8 md:py-12">
@@ -136,20 +158,7 @@ export function ProductsPage() {
 
       <section className="py-8 md:py-12">
         <div className="container">
-          {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-              {Array.from({ length: 12 }).map((_, i) => (
-                <div key={i} className="card animate-pulse">
-                  <div className="aspect-square bg-sage-100" />
-                  <div className="p-4 space-y-3">
-                    <div className="h-4 bg-sage-100 rounded w-3/4" />
-                    <div className="h-3 bg-sage-100 rounded w-1/2" />
-                    <div className="h-6 bg-sage-100 rounded w-1/4 mt-auto" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : products.length > 0 ? (
+          {products.length > 0 ? (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                 {products.map((product, index) => (

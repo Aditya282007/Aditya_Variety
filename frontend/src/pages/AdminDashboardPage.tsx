@@ -37,9 +37,9 @@ export function AdminDashboardPage() {
         orderAPI.getAll({ limit: 5 }),
         productAPI.getLowStock()
       ])
-      setStats(statsRes.data)
-      setRecentOrders(ordersRes.data.orders || [])
-      setLowStockProducts(lowStockRes.data || [])
+      setStats(statsRes)
+      setRecentOrders(ordersRes.orders || [])
+      setLowStockProducts(lowStockRes || [])
     } catch (err) {
       showToast('error', 'Failed to load dashboard')
     } finally {
@@ -215,4 +215,14 @@ export function AdminDashboardPage() {
       </div>
     </div>
   )
+}
+
+const getStatusBadge = (status: string) => {
+  const variants: Record<string, 'success' | 'warning' | 'danger' | 'info'> = {
+    pending: 'warning',
+    confirmed: 'info',
+    fulfilled: 'success',
+    cancelled: 'danger'
+  }
+  return <Badge variant={variants[status] || 'default'} className="capitalize">{status}</Badge>
 }

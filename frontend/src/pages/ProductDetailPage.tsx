@@ -7,7 +7,7 @@ import { Card, CardContent } from '../components/Card'
 import { Button } from '../components/Button'
 import { Badge } from '../components/Badge'
 import { EmptyState } from '../components/EmptyState'
-import { cn, formatPrice } from '../utils/cn'
+import { cn } from '../utils/cn'
 import { Package, ChevronLeft, ChevronRight, Truck, Shield, RotateCcw, Minus, Plus, Share2, Heart } from 'lucide-react'
 
 export function ProductDetailPage() {
@@ -26,7 +26,7 @@ export function ProductDetailPage() {
       try {
         setLoading(true)
         const res = await productAPI.getById(id)
-        setProduct(res.data)
+        setProduct(res)
         setQty(1)
       } catch (err) {
         setError('Product not found')
@@ -282,4 +282,12 @@ export function ProductDetailPage() {
       </section>
     </div>
   )
+}
+
+const formatPrice = (price: number) => {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0
+  }).format(price)
 }

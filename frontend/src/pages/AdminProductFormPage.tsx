@@ -47,7 +47,7 @@ export function AdminProductFormPage() {
     try {
       setLoading(true)
       const res = await productAPI.getById(id)
-      const product = res.data
+      const product = res
       setFormData({
         name: product.name,
         description: product.description,

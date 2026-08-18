@@ -27,11 +27,11 @@ export function HomePage() {
           productAPI.getAll({ limit: 8 }),
           productAPI.getCategories()
         ])
-        setFeaturedProducts(productsRes.data.products || [])
-        setCategories(categoriesRes.data || [])
+        setFeaturedProducts(productsRes.products || [])
+        setCategories(categoriesRes || [])
 
         const counts: Record<string, number> = {}
-        productsRes.data.products?.forEach((p: any) => {
+        productsRes.products?.forEach((p: any) => {
           counts[p.category] = (counts[p.category] || 0) + 1
         })
         setCategoryCounts(counts)

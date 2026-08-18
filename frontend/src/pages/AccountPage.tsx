@@ -37,7 +37,7 @@ export function AccountPage() {
     try {
       setOrdersLoading(true)
       const res = await orderAPI.getMyOrders()
-      setOrders(res.data || [])
+      setOrders(res || [])
     } catch (err) {
       showToast('error', 'Failed to load orders')
     } finally {

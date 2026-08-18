@@ -38,7 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const refreshUser = useCallback(async () => {
     try {
       const res = await authAPI.getMe()
-      setUser(toUser(res.data))
+      setUser(toUser(res))
     } catch {
       setUser(null)
     } finally {
@@ -69,14 +69,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (phone: string, password: string) => {
     const res = await authAPI.login({ phone, password })
-    const userData = toUser(res.data)
+    const userData = toUser(res)
     localStorage.setItem('user', JSON.stringify(userData))
     setUser(userData)
   }
 
   const register = async (name: string, phone: string, password: string) => {
     const res = await authAPI.register({ name, phone, password })
-    const userData = toUser(res.data)
+    const userData = toUser(res)
     localStorage.setItem('user', JSON.stringify(userData))
     setUser(userData)
   }
@@ -89,7 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const updateProfile = async (data: { name?: string; phone?: string; password?: string }) => {
     const res = await authAPI.updateProfile(data)
-    const userData = toUser(res.data)
+    const userData = toUser(res)
     localStorage.setItem('user', JSON.stringify(userData))
     setUser(userData)
   }

@@ -37,7 +37,7 @@ export function AdminOrderDetailPage() {
     try {
       setLoading(true)
       const res = await orderAPI.getById(id)
-      setOrder(res.data)
+      setOrder(res)
     } catch (err) {
       showToast('error', 'Failed to load order')
       navigate('/admin/orders')
@@ -256,4 +256,14 @@ export function AdminOrderDetailPage() {
       </div>
     </div>
   )
+}
+
+const getStatusBadge = (status: string) => {
+  const variants: Record<string, 'success' | 'warning' | 'danger' | 'info'> = {
+    pending: 'warning',
+    confirmed: 'info',
+    fulfilled: 'success',
+    cancelled: 'danger'
+  }
+  return <Badge variant={variants[status] || 'default'} className="capitalize">{status}</Badge>
 }

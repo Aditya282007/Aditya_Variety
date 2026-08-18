@@ -21,10 +21,25 @@ const seedData = async () => {
   await User.deleteMany();
   await Product.deleteMany();
 
+  // Admin credentials from environment variables (REQUIRED in production)
+  const adminPhone = process.env.SEED_ADMIN_PHONE;
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+
+  if (!adminPhone || !adminPassword) {
+    console.error('ERROR: SEED_ADMIN_PHONE and SEED_ADMIN_PASSWORD environment variables are required!');
+    console.error('Set them in your .env file before running seed.');
+    process.exit(1);
+  }
+
+  if (adminPassword.length < 8) {
+    console.error('ERROR: Admin password must be at least 8 characters');
+    process.exit(1);
+  }
+
   const admin = await User.create({
     name: 'Admin',
-    phone: '9999999999',
-    password: 'admin123',
+    phone: adminPhone,
+    password: adminPassword,
     role: 'admin'
   });
 

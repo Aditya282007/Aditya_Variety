@@ -86,9 +86,24 @@ npm install
 npm run dev           # Starts on http://localhost:5173
 ```
 
-### Default Admin Login
-- Phone: `9999999999`
-- Password: `admin123`
+### Admin Credentials
+**For security, admin credentials are NOT hardcoded.** Set them via environment variables before running the seed script:
+
+```env
+# Backend .env
+SEED_ADMIN_PHONE=9876543210      # Your admin phone number
+SEED_ADMIN_PASSWORD=YourStrongPassword123  # Min 8 characters
+```
+
+Then run:
+```bash
+npm run seed
+```
+
+This creates the admin user with your custom credentials and seeds sample products.
+
+### Default Development Login (Local Only)
+For local development only, you can use the example `.env.example` which includes development-only defaults. **Never use these in production.**
 
 ## Environment Variables
 
@@ -103,6 +118,10 @@ WHATSAPP_NUMBER=91XXXXXXXXXX
 CLOUDINARY_CLOUD_NAME=your-cloud-name
 CLOUDINARY_API_KEY=your-api-key
 CLOUDINARY_API_SECRET=your-api-secret
+
+# Admin seeding (REQUIRED)
+SEED_ADMIN_PHONE=9876543210
+SEED_ADMIN_PASSWORD=YourStrongPassword123
 ```
 
 ### Frontend (`.env`)

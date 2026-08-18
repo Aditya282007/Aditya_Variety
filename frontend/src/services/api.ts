@@ -1,19 +1,45 @@
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+const CSRF_HEADER = 'x-csrf-token'
 
 interface ApiResponse<T> {
   data: T
   message?: string
 }
 
+function getCsrfToken(): string | null {
+  // Read CSRF token from cookie
+  const cookies = document.cookie.split(';')
+  for (const cookie of cookies) {
+    const [name, value] = cookie.trim().split('=')
+    if (name === 'csrf_token') {
+      return value
+    }
+  }
+  return null
+}
+
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE}${endpoint}`
+  const method = (options.method || 'GET').toUpperCase()
+  const isMutation = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(options.headers as Record<string, string> || {}),
+  }
+
+  // Add CSRF token for state-changing requests
+  if (isMutation) {
+    const csrfToken = getCsrfToken()
+    if (csrfToken) {
+      headers['x-csrf-token'] = csrfToken
+    }
+  }
+
   const res = await fetch(url, {
     ...options,
     credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
+    headers,
   })
 
   const contentType = res.headers.get('content-type')
@@ -40,13 +66,13 @@ function isResponseError(err: unknown): err is ResponseError {
 
 export const authAPI = {
   register: (data: { name: string; phone: string; password: string }) =>
-    request<ApiResponse<{ _id: string; name: string; phone: string; role: string; token: string }>>('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
+    request<{ _id: string; name: string; phone: string; role: string }>('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
   login: (data: { phone: string; password: string }) =>
-    request<ApiResponse<{ _id: string; name: string; phone: string; role: string; token: string }>>('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
+    request<{ _id: string; name: string; phone: string; role: string }>('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
   logout: () => request('/auth/logout', { method: 'POST' }),
-  getMe: () => request<ApiResponse<{ _id: string; name: string; phone: string; role: string }>>('/auth/me'),
+  getMe: () => request<{ _id: string; name: string; phone: string; role: string }>('/auth/me'),
   updateProfile: (data: { name?: string; phone?: string; password?: string }) =>
-    request<ApiResponse<{ _id: string; name: string; phone: string; role: string }>>('/auth/profile', { method: 'PUT', body: JSON.stringify(data) }),
+    request<{ _id: string; name: string; phone: string; role: string }>('/auth/profile', { method: 'PUT', body: JSON.stringify(data) }),
 }
 
 export const productAPI = {
@@ -56,31 +82,31 @@ export const productAPI = {
     if (params?.search) searchParams.set('search', params.search)
     if (params?.page) searchParams.set('page', params.page.toString())
     if (params?.limit) searchParams.set('limit', params.limit.toString())
-    return request<ApiResponse<{ products: any[]; totalPages: number; currentPage: number; total: number }>>(`/products?${searchParams.toString()}`)
+    return request<{ products: any[]; totalPages: number; currentPage: number; total: number }>(`/products?${searchParams.toString()}`)
   },
-  getById: (id: string) => request<ApiResponse<any>>(`/products/${id}`),
-  getCategories: () => request<ApiResponse<string[]>>('/products/categories'),
-  create: (data: FormData) => request<ApiResponse<any>>('/products', { method: 'POST', body: data, headers: {} }),
-  update: (id: string, data: FormData) => request<ApiResponse<any>>(`/products/${id}`, { method: 'PUT', body: data, headers: {} }),
-  delete: (id: string) => request<ApiResponse<any>>(`/products/${id}`, { method: 'DELETE' }),
-  getLowStock: () => request<ApiResponse<any[]>>('/products/low-stock'),
+  getById: (id: string) => request<any>(`/products/${id}`),
+  getCategories: () => request<string[]>('/products/categories'),
+  create: (data: FormData) => request<any>('/products', { method: 'POST', body: data, headers: {} }),
+  update: (id: string, data: FormData) => request<any>(`/products/${id}`, { method: 'PUT', body: data, headers: {} }),
+  delete: (id: string) => request<any>(`/products/${id}`, { method: 'DELETE' }),
+  getLowStock: () => request<any[]>('/products/low-stock'),
 }
 
 export const orderAPI = {
   create: (items: { productId: string; qty: number }[]) =>
-    request<ApiResponse<any>>('/orders', { method: 'POST', body: JSON.stringify({ items }) }),
-  getMyOrders: () => request<ApiResponse<any[]>>('/orders/my-orders'),
-  getById: (id: string) => request<ApiResponse<any>>(`/orders/${id}`),
+    request<any>('/orders', { method: 'POST', body: JSON.stringify({ items }) }),
+  getMyOrders: () => request<any[]>('/orders/my-orders'),
+  getById: (id: string) => request<any>(`/orders/${id}`),
   getAll: (params?: { status?: string; page?: number; limit?: number }) => {
     const searchParams = new URLSearchParams()
     if (params?.status && params.status !== 'all') searchParams.set('status', params.status)
     if (params?.page) searchParams.set('page', params.page.toString())
     if (params?.limit) searchParams.set('limit', params.limit.toString())
-    return request<ApiResponse<{ orders: any[]; totalPages: number; currentPage: number; total: number }>>(`/orders?${searchParams.toString()}`)
+    return request<{ orders: any[]; totalPages: number; currentPage: number; total: number }>(`/orders?${searchParams.toString()}`)
   },
   updateStatus: (id: string, status: string) =>
-    request<ApiResponse<any>>(`/orders/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }) }),
-  getDashboardStats: () => request<ApiResponse<{ totalOrdersToday: number; pendingOrders: number; lowStockCount: number }>>('/orders/dashboard/stats'),
+    request<any>(`/orders/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }) }),
+  getDashboardStats: () => request<{ totalOrdersToday: number; pendingOrders: number; lowStockCount: number }>('/orders/dashboard/stats'),
 }
 
 export { isResponseError }
