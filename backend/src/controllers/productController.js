@@ -14,8 +14,8 @@ export const getProducts = async (req, res) => {
     }
 
     // Cap pagination limits
-    const pageNum = Math.max(1, parseInt(page as string) || 1);
-    const limitNum = Math.min(50, Math.max(1, parseInt(limit as string) || 20)); // Max 50 per page
+    const pageNum = Math.max(1, parseInt(String(page)) || 1);
+    const limitNum = Math.min(50, Math.max(1, parseInt(String(limit)) || 20)); // Max 50 per page
 
     const products = await Product.find(query)
       .sort({ createdAt: -1 })
