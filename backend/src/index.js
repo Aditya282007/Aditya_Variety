@@ -57,6 +57,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Debug body parser
+app.use((req, res, next) => {
+  console.log('Body parser check:', req.method, req.path, 'body:', req.body);
+  next();
+});
+
 // Apply general rate limiting to all API routes
 app.use('/api', generalLimiter);
 
