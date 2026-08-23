@@ -3,7 +3,6 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
-import mongoSanitize from 'express-mongo-sanitize';
 import helmet from 'helmet';
 
 import connectDB from './config/db.js';
@@ -24,9 +23,6 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
   contentSecurityPolicy: false, // Disable CSP for now, can be configured later
 }));
-
-// Sanitize data against NoSQL injection
-app.use(mongoSanitize());
 
 // Rate limiting
 const authLimiter = rateLimit({
