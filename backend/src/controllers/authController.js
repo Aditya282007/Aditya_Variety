@@ -108,7 +108,16 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: 'Phone must be a 10-digit number' });
     }
 
+    console.log('Login attempt for phone:', sanitizedPhone);
     const user = await User.findOne({ phone: sanitizedPhone });
+    console.log('User found:', user ? 'yes' : 'no');
+    
+    if (user) {
+      console.log('User password hash exists:', !!user.password);
+      const passwordMatch = await user.matchPassword(password);
+      console.log('Password match:', passwordMatch);
+    }
+    
     if (user && (await user.matchPassword(password))) {
       const token = generateToken(user._id);
       setTokenCookie(res, token);
