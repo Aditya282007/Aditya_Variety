@@ -13,9 +13,8 @@ export const getProducts = async (req, res) => {
       query.$text = { $search: search };
     }
 
-    // Cap pagination limits
     const pageNum = Math.max(1, parseInt(String(page)) || 1);
-    const limitNum = Math.min(50, Math.max(1, parseInt(String(limit)) || 20)); // Max 50 per page
+    const limitNum = Math.min(50, Math.max(1, parseInt(String(limit)) || 20));
 
     const products = await Product.find(query)
       .sort({ createdAt: -1 })
@@ -82,6 +81,8 @@ export const createProduct = async (req, res) => {
       return res.status(400).json({ message: 'Category is required' });
     }
 
+    console.log('Creating product with:', { name, description, price, stock, category, imageUrl, cloudinaryId });
+
     const product = await Product.create({
       name: name.trim(),
       description: description.trim(),
@@ -92,10 +93,16 @@ export const createProduct = async (req, res) => {
       cloudinaryId
     });
 
+    console.log('Product created successfully:', product._id);
     res.status(201).json(product);
   } catch (error) {
     console.error('Create product error:', error);
-    res.status(500).json({ message: 'Failed to create product' });
+    console.error('Error stack:', error.stack);
+    // Check if it's a multer/Cloudinary error
+    if (error.message?.includes('Cloudinary') || error.message?.includes('cloudinary')) {
+      return res.status(500).json({ message: 'Image upload failed. Check Cloudinary configuration.' });
+    }
+    res.status(500).json({ message: 'Failed to create product', error: error.message });
   }
 };
 
@@ -149,7 +156,11 @@ export const updateProduct = async (req, res) => {
     res.json(updatedProduct);
   } catch (error) {
     console.error('Update product error:', error);
-    res.status(500).json({ message: 'Failed to update product' });
+    console.error('Error stack:', error.stack);
+    if (error.message?.includes('Cloudinary') || error.message?.includes('cloudinary')) {
+      return res.status(500).json({ message: 'Image upload failed. Check Cloudinary configuration.' });
+    }
+    res.status(500).json({ message: 'Failed to update product', error: error.message });
   }
 };
 
