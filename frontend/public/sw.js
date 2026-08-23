@@ -79,10 +79,18 @@ self.addEventListener('fetch', (event) => {
           return fetch(request)
             .then((response) => {
               if (response.ok) {
-                const responseClone = response.clone()
-                caches.open(STATIC_CACHE).then((cache) => cache.put(request, responseClone))
+                try {
+                  const responseClone = response.clone()
+                  caches.open(STATIC_CACHE).then((cache) => cache.put(request, responseClone))
+                } catch (e) {
+                  console.warn('Failed to cache response:', e)
+                }
               }
               return response
+            })
+            .catch((err) => {
+              console.warn('Fetch failed:', err)
+              return caches.match(request)
             })
         })
     )
