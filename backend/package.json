@@ -11,7 +11,7 @@
     "clear-db": "node src/utils/clearDb.js"
   },
   "dependencies": {
-    "bcryptjs": "^2.4.3",
+    "bcryptjs": "^3.0.3",
     "cloudinary": "^1.41.3",
     "cookie": "^0.7.2",
     "cookie-parser": "^1.4.6",
