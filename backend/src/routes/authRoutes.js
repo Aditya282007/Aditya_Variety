@@ -17,6 +17,7 @@ router.post('/test-bcrypt', async (req, res) => {
   try {
     const { password } = req.body;
     console.log('Testing bcrypt...');
+    console.log('bcrypt version:', require('bcryptjs/package.json').version);
     const hash = await bcrypt.hash(password, 10);
     console.log('Hash generated:', hash);
     const match = await bcrypt.compare(password, hash);
@@ -24,7 +25,7 @@ router.post('/test-bcrypt', async (req, res) => {
     res.json({ success: true, match });
   } catch (error) {
     console.error('Bcrypt test error:', error);
-    res.status(500).json({ error: error.message, stack: error.stack });
+    res.status(500).json({ error: error.message, stack: error.stack, name: error.name, code: error.code });
   }
 });
 
