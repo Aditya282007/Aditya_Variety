@@ -114,8 +114,13 @@ export const login = async (req, res) => {
     
     if (user) {
       console.log('User password hash exists:', !!user.password);
-      const passwordMatch = await user.matchPassword(password);
-      console.log('Password match:', passwordMatch);
+      try {
+        const passwordMatch = await user.matchPassword(password);
+        console.log('Password match:', passwordMatch);
+      } catch (bcryptError) {
+        console.error('Bcrypt error:', bcryptError);
+        throw bcryptError;
+      }
     }
     
     if (user && (await user.matchPassword(password))) {
@@ -138,7 +143,7 @@ export const login = async (req, res) => {
     }
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ message: 'Login failed' });
+    res.status(500).json({ message: 'Login failed', error: error.message });
   }
 };
 
