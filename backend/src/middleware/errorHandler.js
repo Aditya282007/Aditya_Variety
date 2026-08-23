@@ -20,6 +20,9 @@ const errorHandler = (err, req, res, next) => {
   } else if (err.message && !isProd) {
     // Only show actual error message in development
     message = err.message;
+  } else if (err.message) {
+    // For debugging: show error message even in production
+    message = err.message;
   }
 
   res.json({
