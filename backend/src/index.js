@@ -6,7 +6,7 @@ import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 
 import connectDB from './config/db.js';
-// import errorHandler from './middleware/errorHandler.js'; // Temporarily disabled for debugging
+import errorHandler from './middleware/errorHandler.js';
 import { csrfProtection } from './middleware/csrf.js';
 import authRoutes from './routes/authRoutes.js';
 import productRoutes from './routes/productRoutes.js';
@@ -22,7 +22,7 @@ const allowedOrigin = (process.env.FRONTEND_URL || 'http://localhost:5173').repl
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
   contentSecurityPolicy: false, // Disable CSP for now, can be configured later
-}));
+});
 
 // Rate limiting
 const authLimiter = rateLimit({
@@ -79,7 +79,7 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// app.use(errorHandler); // Temporarily disabled for debugging
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
