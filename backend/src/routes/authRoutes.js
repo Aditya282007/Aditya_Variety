@@ -13,7 +13,7 @@ router.get('/me', protect, getMe);
 router.put('/profile', protect, updateProfile);
 
 // Test bcrypt endpoint
-router.post('/test-bcrypt', async (req, res) => {
+router.post('/test-bcrypt', async (req, res, next) => {
   try {
     const { password } = req.body;
     console.log('Testing bcrypt...');
@@ -25,7 +25,7 @@ router.post('/test-bcrypt', async (req, res) => {
     res.json({ success: true, match });
   } catch (error) {
     console.error('Bcrypt test error:', error);
-    res.status(500).json({ error: error.message, stack: error.stack, name: error.name, code: error.code });
+    next(error); // Pass to error handler
   }
 });
 
