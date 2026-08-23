@@ -16,7 +16,7 @@ export function generateCsrfToken() {
 export function setCsrfCookie(res, token) {
   const isProd = process.env.NODE_ENV === 'production';
   res.cookie(CSRF_TOKEN_NAME, token, {
-    httpOnly: true,
+    httpOnly: false, // Allow JavaScript to read for CSRF header
     secure: isProd,
     sameSite: isProd ? 'none' : 'lax',
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
