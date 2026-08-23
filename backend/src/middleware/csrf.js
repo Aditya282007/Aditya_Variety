@@ -48,7 +48,7 @@ export function csrfProtection(req, res, next) {
   }
 
   // Skip CSRF for login/register (handled separately)
-  if (req.path.startsWith('/api/auth/login') || req.path.startsWith('/api/auth/register')) {
+  if (req.path.startsWith('/auth/login') || req.path.startsWith('/auth/register')) {
     return next();
   }
 

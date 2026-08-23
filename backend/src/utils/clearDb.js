@@ -10,7 +10,7 @@ async function clearDatabase() {
     console.log('Connected to MongoDB');
 
     // Keep admin user
-    const admin = await User.findOne({ phone: '9999999999', role: 'admin' });
+    const admin = await User.findOne({ phone: '9586670005', role: 'admin' });
     if (!admin) {
       console.error('Admin user not found! Aborting.');
       process.exit(1);
