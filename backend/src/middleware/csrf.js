@@ -30,7 +30,7 @@ export function setCsrfCookie(res, token) {
 export function clearCsrfCookie(res) {
   const isProd = process.env.NODE_ENV === 'production';
   res.clearCookie(CSRF_TOKEN_NAME, {
-    httpOnly: true,
+    httpOnly: false,
     secure: isProd,
     sameSite: isProd ? 'none' : 'lax',
     path: '/'
