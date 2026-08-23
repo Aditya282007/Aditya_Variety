@@ -21,29 +21,29 @@ const allowedOrigin = (process.env.FRONTEND_URL || 'http://localhost:5173').repl
 // Security middleware
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
-  contentSecurityPolicy: false, // Disable CSP for now, can be configured later
-});
+  contentSecurityPolicy: false,
+}));
 
 // Rate limiting
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20, // limit each IP to 20 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 20,
   message: { message: 'Too many requests, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
 const orderLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 10, // limit each IP to 10 orders per minute
+  windowMs: 60 * 1000,
+  max: 10,
   message: { message: 'Too many order requests, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
 const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 100,
   message: { message: 'Too many requests, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
