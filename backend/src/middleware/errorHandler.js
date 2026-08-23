@@ -2,6 +2,8 @@ const errorHandler = (err, req, res, next) => {
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
   res.status(statusCode);
 
+  console.error('Error handler received:', err);
+
   // Don't leak internal error details in production
   const isProd = process.env.NODE_ENV === 'production';
   
@@ -25,10 +27,8 @@ const errorHandler = (err, req, res, next) => {
     message = err.message;
   }
 
-  res.json({
-    message,
-    ...(!isProd && { stack: err.stack })
-  });
+  console.log('Sending error response:', message);
+  res.json({ message });
 };
 
 export default errorHandler;
