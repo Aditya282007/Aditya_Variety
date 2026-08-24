@@ -14,9 +14,17 @@ const protect = async (req, res, next) => {
     return res.status(401).json({ message: 'Not authorized, no token' });
   }
 
+  if (!process.env.JWT_SECRET) {
+    console.error('JWT_SECRET not configured');
+    return res.status(500).json({ message: 'Authentication not configured' });
+  }
+
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = await User.findById(decoded.id).select('-password');
+    if (!req.user) {
+      return res.status(401).json({ message: 'Not authorized, user not found' });
+    }
     next();
   } catch (error) {
     return res.status(401).json({ message: 'Not authorized, token failed' });

@@ -15,7 +15,7 @@ import { CloudinaryStorage } from 'multer-storage-cloudinary';
 
 const router = express.Router();
 
-// Configure Cloudinary - validate credentials first
+// Configure Cloudinary - validate credentials on demand
 function configureCloudinary() {
   const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
   const apiKey = process.env.CLOUDINARY_API_KEY;
@@ -35,8 +35,14 @@ function configureCloudinary() {
   console.log('Cloudinary configured successfully');
 }
 
-// Configure Cloudinary immediately
-configureCloudinary();
+let cloudinaryConfigured = false;
+
+function ensureCloudinaryConfigured() {
+  if (!cloudinaryConfigured) {
+    configureCloudinary();
+    cloudinaryConfigured = true;
+  }
+}
 
 const storage = new CloudinaryStorage({
   cloudinary,
@@ -66,6 +72,16 @@ router.get('/', getProducts);
 router.get('/categories', getCategories);
 router.get('/low-stock', protect, authorize('admin'), getLowStockProducts);
 router.get('/:id', getProductById);
+
+// Configure Cloudinary before handling upload routes
+router.use((req, res, next) => {
+  try {
+    ensureCloudinaryConfigured();
+    next();
+  } catch (error) {
+    return res.status(500).json({ message: 'Image upload service not configured' });
+  }
+});
 
 router.post('/', protect, authorize('admin'), upload.single('image'), handleMulterError, createProduct);
 router.put('/:id', protect, authorize('admin'), upload.single('image'), handleMulterError, updateProduct);
