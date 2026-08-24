@@ -44,15 +44,18 @@ function ensureCloudinaryConfigured() {
   }
 }
 
-const storage = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder: 'variety-store/products',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'webp']
-  }
-});
-
-const upload = multer({ storage });
+// Lazy storage creation - only creates CloudinaryStorage when needed
+function createUploadMiddleware() {
+  ensureCloudinaryConfigured();
+  const storage = new CloudinaryStorage({
+    cloudinary,
+    params: {
+      folder: 'variety-store/products',
+      allowed_formats: ['jpg', 'jpeg', 'png', 'webp']
+    }
+  });
+  return multer({ storage });
+}
 
 // Multer error handling middleware
 const handleMulterError = (err, req, res, next) => {
@@ -73,18 +76,20 @@ router.get('/categories', getCategories);
 router.get('/low-stock', protect, authorize('admin'), getLowStockProducts);
 router.get('/:id', getProductById);
 
-// Configure Cloudinary before handling upload routes
-router.use((req, res, next) => {
+// Create upload middleware on-demand
+const createUploadHandler = () => {
   try {
-    ensureCloudinaryConfigured();
-    next();
+    const upload = createUploadMiddleware();
+    return upload.single('image');
   } catch (error) {
-    return res.status(500).json({ message: 'Image upload service not configured' });
+    return (req, res, next) => {
+      res.status(500).json({ message: 'Image upload service not configured' });
+    };
   }
-});
+};
 
-router.post('/', protect, authorize('admin'), upload.single('image'), handleMulterError, createProduct);
-router.put('/:id', protect, authorize('admin'), upload.single('image'), handleMulterError, updateProduct);
+router.post('/', protect, authorize('admin'), createUploadHandler(), handleMulterError, createProduct);
+router.put('/:id', protect, authorize('admin'), createUploadHandler(), handleMulterError, updateProduct);
 router.delete('/:id', protect, authorize('admin'), deleteProduct);
 
 export default router;
